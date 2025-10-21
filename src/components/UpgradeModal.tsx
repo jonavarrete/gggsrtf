@@ -8,7 +8,7 @@ interface UpgradeModalProps {
   onConfirm: (businessData: Omit<Business, 'id' | 'rating' | 'reviewCount'>) => void;
 }
 
-export function UpgradeModal({ userName, onClose, onConfirm }: UpgradeModalProps) {
+export function UpgradeModal({ onClose, onConfirm }: UpgradeModalProps) {
   const [formData, setFormData] = useState({
     name: '',
     category: 'restaurant' as Business['category'],

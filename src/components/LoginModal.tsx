@@ -29,6 +29,7 @@ export function LoginModal({ onClose, onLogin }: LoginModalProps) {
         name,
         email,
         type: 'customer',
+        createdAt: new Date().toISOString(),
       };
     }
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LogIn, LogOut, User as UserIcon, Store, Package as PackageIcon, Settings, Calendar } from 'lucide-react';
+import { LogIn, User as UserIcon, Package as PackageIcon } from 'lucide-react';
 import { Business, User } from './types';
 import { storageService } from './services/storage';
 import { searchService } from './services/search';
@@ -13,6 +13,7 @@ import { DeliveryService } from './components/DeliveryService';
 import { UserSettings } from './components/UserSettings';
 import { EventManager } from './components/EventManager';
 import { UpgradeModal } from './components/UpgradeModal';
+import { UserMenu } from './components/UserMenu';
 
 type ViewMode = 'directory' | 'business-dashboard' | 'delivery' | 'events';
 
@@ -125,29 +126,13 @@ function App() {
 
             <div>
               {currentUser ? (
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 text-gray-700">
-                    <UserIcon className="w-5 h-5" />
-                    <span className="font-medium">{currentUser.name}</span>
-                    <span className="text-xs text-gray-500 ml-1">
-                      ({currentUser.type === 'business' ? 'Negocio' : 'Cliente'})
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => setShowSettings(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                  >
-                    <Settings className="w-4 h-4" />
-                    <span>Configuración</span>
-                  </button>
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span>Salir</span>
-                  </button>
-                </div>
+                <UserMenu
+                  user={currentUser}
+                  onSettings={() => setShowSettings(true)}
+                  onLogout={handleLogout}
+                  onBusinessDashboard={currentUser.type === 'business' ? () => setViewMode('business-dashboard') : undefined}
+                  onEvents={() => setViewMode('events')}
+                />
               ) : (
                 <button
                   onClick={() => setShowLoginModal(true)}
@@ -185,33 +170,6 @@ function App() {
               Mensajería
             </button>
 
-            {currentUser?.type === 'customer' && (
-              <button
-                onClick={() => setViewMode('events')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                  viewMode === 'events'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                <Calendar className="w-4 h-4" />
-                Mis Eventos
-              </button>
-            )}
-
-            {currentUser?.type === 'business' && (
-              <button
-                onClick={() => setViewMode('business-dashboard')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                  viewMode === 'business-dashboard'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                <Store className="w-4 h-4" />
-                Mi Negocio
-              </button>
-            )}
           </nav>
         </div>
       </header>
@@ -287,7 +245,7 @@ function App() {
 
       {viewMode === 'delivery' && <DeliveryService onClose={() => setViewMode('directory')} />}
 
-      {viewMode === 'events' && currentUser?.type === 'customer' && (
+      {viewMode === 'events' && currentUser && (
         <EventManager user={currentUser} />
       )}
 

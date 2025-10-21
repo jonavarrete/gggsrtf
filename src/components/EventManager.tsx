@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Calendar, Clock, MapPin, DollarSign } from 'lucide-react';
-import { Event, User } from '../types';
+import { Plus, CreditCard as Edit2, Trash2, Calendar, Clock, MapPin, DollarSign, AlertCircle } from 'lucide-react';
+import { Event, User, Business } from '../types';
 import { storageService } from '../services/storage';
 
 interface EventManagerProps {
@@ -8,6 +8,7 @@ interface EventManagerProps {
 }
 
 export function EventManager({ user }: EventManagerProps) {
+  const [business, setBusiness] = useState<Business | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
@@ -24,7 +25,12 @@ export function EventManager({ user }: EventManagerProps) {
 
   useEffect(() => {
     loadEvents();
-  }, [user.id]);
+    if (user.type === 'business' && user.businessId) {
+      const businesses = storageService.getBusinesses();
+      const userBusiness = businesses.find(b => b.id === user.businessId);
+      setBusiness(userBusiness || null);
+    }
+  }, [user.id, user.type, user.businessId]);
 
   const loadEvents = () => {
     const userEvents = storageService.getEventsByUser(user.id);
@@ -89,12 +95,39 @@ export function EventManager({ user }: EventManagerProps) {
     setIsFormOpen(false);
   };
 
+  const isBusiness = user.type === 'business';
+  const isTheaterOrCinema = business?.category === 'entertainment';
+
+  if (isBusiness && !isTheaterOrCinema) {
+    return (
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-6 flex items-start gap-4">
+          <AlertCircle className="w-6 h-6 text-orange-600 flex-shrink-0 mt-1" />
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              Gestión de Eventos no disponible
+            </h3>
+            <p className="text-gray-700">
+              La gestión de eventos está disponible solo para negocios de entretenimiento (cines y teatros).
+              Tu negocio está categorizado como <strong>{business?.category || 'otro tipo'}</strong>.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <div>
           <h2 className="text-3xl font-bold text-gray-800">Mis Eventos</h2>
-          <p className="text-gray-600 mt-1">Gestiona tus eventos de cine y teatro</p>
+          <p className="text-gray-600 mt-1">
+            {isBusiness
+              ? `Gestiona los eventos de ${business?.name || 'tu negocio'}`
+              : 'Gestiona tus eventos de cine y teatro'
+            }
+          </p>
         </div>
         <button
           onClick={() => setIsFormOpen(true)}
