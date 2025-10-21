@@ -62,6 +62,17 @@ export const storageService = {
     }
   },
 
+  createBusinessUser(name: string, email: string, businessId: string): User {
+    const user: User = {
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      name,
+      email,
+      type: 'business',
+      businessId,
+    };
+    return user;
+  },
+
   initializeSampleData(): void {
     if (this.getBusinesses().length === 0) {
       const sampleBusinesses: Business[] = [

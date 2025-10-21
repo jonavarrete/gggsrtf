@@ -28,8 +28,31 @@ export interface Business {
   tags: string[];
 }
 
+export type UserType = 'customer' | 'business';
+
 export interface User {
   id: string;
   name: string;
   email: string;
+  type: UserType;
+  businessId?: string;
+}
+
+export type PackageStatus = 'pending' | 'in_transit' | 'delivered' | 'cancelled';
+
+export interface Package {
+  id: string;
+  senderName: string;
+  senderPhone: string;
+  senderAddress: string;
+  recipientName: string;
+  recipientPhone: string;
+  recipientAddress: string;
+  packageDescription: string;
+  weight: number;
+  dimensions: string;
+  status: PackageStatus;
+  price: number;
+  createdAt: string;
+  deliveredAt?: string;
 }

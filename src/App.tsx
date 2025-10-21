@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LogIn, LogOut, User as UserIcon } from 'lucide-react';
+import { LogIn, LogOut, User as UserIcon, Store, Package as PackageIcon } from 'lucide-react';
 import { Business, User } from './types';
 import { storageService } from './services/storage';
 import { searchService } from './services/search';
@@ -8,8 +8,13 @@ import { PromotedCarousel } from './components/PromotedCarousel';
 import { BusinessCard } from './components/BusinessCard';
 import { BusinessDetail } from './components/BusinessDetail';
 import { LoginModal } from './components/LoginModal';
+import { BusinessDashboard } from './components/BusinessDashboard';
+import { DeliveryService } from './components/DeliveryService';
+
+type ViewMode = 'directory' | 'business-dashboard' | 'delivery';
 
 function App() {
+  const [viewMode, setViewMode] = useState<ViewMode>('directory');
   const [searchQuery, setSearchQuery] = useState('');
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [filteredBusinesses, setFilteredBusinesses] = useState<Business[]>([]);
@@ -71,101 +76,157 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50">
       <header className="bg-white shadow-sm sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-orange-600 bg-clip-text text-transparent">
-            BuscaNegocio
-          </h1>
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between mb-3">
+            <h1
+              onClick={() => setViewMode('directory')}
+              className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-orange-600 bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
+            >
+              BuscaNegocio
+            </h1>
 
-          <div>
-            {currentUser ? (
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 text-gray-700">
-                  <UserIcon className="w-5 h-5" />
-                  <span className="font-medium">{currentUser.name}</span>
+            <div>
+              {currentUser ? (
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 text-gray-700">
+                    <UserIcon className="w-5 h-5" />
+                    <span className="font-medium">{currentUser.name}</span>
+                    <span className="text-xs text-gray-500 ml-1">
+                      ({currentUser.type === 'business' ? 'Negocio' : 'Cliente'})
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Salir</span>
+                  </button>
                 </div>
+              ) : (
                 <button
-                  onClick={handleLogout}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  onClick={() => setShowLoginModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                 >
-                  <LogOut className="w-4 h-4" />
-                  <span>Salir</span>
+                  <LogIn className="w-4 h-4" />
+                  <span>Iniciar Sesión</span>
                 </button>
-              </div>
-            ) : (
+              )}
+            </div>
+          </div>
+
+          <nav className="flex gap-2">
+            <button
+              onClick={() => setViewMode('directory')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                viewMode === 'directory'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <UserIcon className="w-4 h-4" />
+              Directorio
+            </button>
+
+            <button
+              onClick={() => setViewMode('delivery')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                viewMode === 'delivery'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <PackageIcon className="w-4 h-4" />
+              Mensajería
+            </button>
+
+            {currentUser?.type === 'business' && (
               <button
-                onClick={() => setShowLoginModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                onClick={() => setViewMode('business-dashboard')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                  viewMode === 'business-dashboard'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
               >
-                <LogIn className="w-4 h-4" />
-                <span>Iniciar Sesión</span>
+                <Store className="w-4 h-4" />
+                Mi Negocio
               </button>
             )}
-          </div>
+          </nav>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-12">
-          <h2 className="text-3xl font-bold text-gray-800 mb-2 text-center">
-            Descubre los mejores lugares
-          </h2>
-          <p className="text-gray-600 text-center mb-6">
-            Restaurantes, entretenimiento, tiendas y más
-          </p>
-          <SearchBar value={searchQuery} onChange={setSearchQuery} />
-        </div>
+      {viewMode === 'directory' && (
+        <main className="max-w-7xl mx-auto px-4 py-8">
+          <div className="mb-12">
+            <h2 className="text-3xl font-bold text-gray-800 mb-2 text-center">
+              Descubre los mejores lugares
+            </h2>
+            <p className="text-gray-600 text-center mb-6">
+              Restaurantes, entretenimiento, tiendas y más
+            </p>
+            <SearchBar value={searchQuery} onChange={setSearchQuery} />
+          </div>
 
-        <div className="space-y-8">
-          {groupedBusinesses.premium.length > 0 && (
-            <PromotedCarousel
-              businesses={groupedBusinesses.premium}
-              title="⭐ Destacados Premium"
-              onBusinessClick={setSelectedBusiness}
-            />
-          )}
+          <div className="space-y-8">
+            {groupedBusinesses.premium.length > 0 && (
+              <PromotedCarousel
+                businesses={groupedBusinesses.premium}
+                title="⭐ Destacados Premium"
+                onBusinessClick={setSelectedBusiness}
+              />
+            )}
 
-          {groupedBusinesses.gold.length > 0 && (
-            <PromotedCarousel
-              businesses={groupedBusinesses.gold}
-              title="🏆 Promocionados Gold"
-              onBusinessClick={setSelectedBusiness}
-            />
-          )}
+            {groupedBusinesses.gold.length > 0 && (
+              <PromotedCarousel
+                businesses={groupedBusinesses.gold}
+                title="🏆 Promocionados Gold"
+                onBusinessClick={setSelectedBusiness}
+              />
+            )}
 
-          {groupedBusinesses.silver.length > 0 && (
-            <PromotedCarousel
-              businesses={groupedBusinesses.silver}
-              title="✨ Promocionados Silver"
-              onBusinessClick={setSelectedBusiness}
-            />
-          )}
+            {groupedBusinesses.silver.length > 0 && (
+              <PromotedCarousel
+                businesses={groupedBusinesses.silver}
+                title="✨ Promocionados Silver"
+                onBusinessClick={setSelectedBusiness}
+              />
+            )}
 
-          {groupedBusinesses.regular.length > 0 && (
-            <div>
-              <h2 className="text-lg font-bold text-gray-800 mb-3">
-                Todos los resultados
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {groupedBusinesses.regular.map((business) => (
-                  <BusinessCard
-                    key={business.id}
-                    business={business}
-                    onClick={() => setSelectedBusiness(business)}
-                  />
-                ))}
+            {groupedBusinesses.regular.length > 0 && (
+              <div>
+                <h2 className="text-lg font-bold text-gray-800 mb-3">
+                  Todos los resultados
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {groupedBusinesses.regular.map((business) => (
+                    <BusinessCard
+                      key={business.id}
+                      business={business}
+                      onClick={() => setSelectedBusiness(business)}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {filteredBusinesses.length === 0 && (
-            <div className="text-center py-20">
-              <p className="text-gray-500 text-lg">
-                No se encontraron resultados para "{searchQuery}"
-              </p>
-            </div>
-          )}
-        </div>
-      </main>
+            {filteredBusinesses.length === 0 && (
+              <div className="text-center py-20">
+                <p className="text-gray-500 text-lg">
+                  No se encontraron resultados para "{searchQuery}"
+                </p>
+              </div>
+            )}
+          </div>
+        </main>
+      )}
+
+      {viewMode === 'business-dashboard' && currentUser?.type === 'business' && (
+        <BusinessDashboard user={currentUser} onClose={() => setViewMode('directory')} />
+      )}
+
+      {viewMode === 'delivery' && <DeliveryService onClose={() => setViewMode('directory')} />}
 
       {selectedBusiness && (
         <BusinessDetail
