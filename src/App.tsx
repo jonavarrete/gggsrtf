@@ -173,44 +173,65 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-200">
       <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40 transition-colors duration-200">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center justify-between">
               <h1
                 onClick={() => setViewMode('directory')}
-                className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-orange-600 bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity dark:from-blue-400 dark:to-orange-400"
+                className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-orange-600 bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity dark:from-blue-400 dark:to-orange-400"
               >
-                BuscaNegocio
+                Buscalo!
               </h1>
 
-              <nav className="flex gap-2">
-                <button
-                  onClick={() => setViewMode('directory')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                    viewMode === 'directory'
-                      ? 'bg-blue-600 text-white dark:bg-blue-500'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  <UserIcon className="w-4 h-4" />
-                  Directorio
-                </button>
-
-                <button
-                  onClick={() => setViewMode('delivery')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                    viewMode === 'delivery'
-                      ? 'bg-blue-600 text-white dark:bg-blue-500'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  <PackageIcon className="w-4 h-4" />
-                  Mensajería
-                </button>
-              </nav>
+              <div className="sm:hidden">
+                {currentUser ? (
+                  <UserMenu
+                    user={currentUser}
+                    onSettings={() => setShowSettings(true)}
+                    onLogout={handleLogout}
+                    onBusinessDashboard={currentUser.type === 'business' ? () => setViewMode('business-dashboard') : undefined}
+                    onEvents={() => setViewMode('events')}
+                    onUpgrade={currentUser.type === 'customer' ? handleUpgrade : undefined}
+                  />
+                ) : (
+                  <button
+                    onClick={() => setShowLoginModal(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span>Entrar</span>
+                  </button>
+                )}
+              </div>
             </div>
 
-            <div>
+            <nav className="flex gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => setViewMode('directory')}
+                className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg transition-colors flex-1 sm:flex-none text-sm sm:text-base ${
+                  viewMode === 'directory'
+                    ? 'bg-blue-600 text-white dark:bg-blue-500'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                <UserIcon className="w-4 h-4" />
+                <span className="whitespace-nowrap">Directorio</span>
+              </button>
+
+              <button
+                onClick={() => setViewMode('delivery')}
+                className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg transition-colors flex-1 sm:flex-none text-sm sm:text-base ${
+                  viewMode === 'delivery'
+                    ? 'bg-blue-600 text-white dark:bg-blue-500'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                <PackageIcon className="w-4 h-4" />
+                <span className="whitespace-nowrap">Mensajería</span>
+              </button>
+            </nav>
+
+            <div className="hidden sm:block">
               {currentUser ? (
                 <UserMenu
                   user={currentUser}
@@ -235,68 +256,76 @@ function App() {
       </header>
 
       {viewMode === 'directory' && (
-        <main className="max-w-7xl mx-auto px-4 py-8">
-          <div className="mb-12">
-            <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2 text-center">
+        <main className="max-w-7xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
+          <div className="mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2 text-center px-2">
               Descubre los mejores lugares
             </h2>
-            <p className="text-gray-600 dark:text-gray-300 text-center mb-6">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 text-center mb-4 sm:mb-6 px-2">
               Restaurantes, entretenimiento, tiendas y más
             </p>
             <SearchBar value={searchQuery} onChange={setSearchQuery} />
           </div>
 
-          <div className="space-y-8">
-            {groupedBusinesses.premium.length > 0 && (
-              <PromotedCarousel
-                businesses={groupedBusinesses.premium}
-                title="⭐ Destacados Premium"
-                onBusinessClick={setSelectedBusiness}
-              />
-            )}
+          {searchQuery.trim() ? (
+            <div className="space-y-6 sm:space-y-8">
+              {groupedBusinesses.premium.length > 0 && (
+                <PromotedCarousel
+                  businesses={groupedBusinesses.premium}
+                  title="⭐ Destacados Premium"
+                  onBusinessClick={setSelectedBusiness}
+                />
+              )}
 
-            {groupedBusinesses.gold.length > 0 && (
-              <PromotedCarousel
-                businesses={groupedBusinesses.gold}
-                title="🏆 Promocionados Gold"
-                onBusinessClick={setSelectedBusiness}
-              />
-            )}
+              {groupedBusinesses.gold.length > 0 && (
+                <PromotedCarousel
+                  businesses={groupedBusinesses.gold}
+                  title="🏆 Promocionados Gold"
+                  onBusinessClick={setSelectedBusiness}
+                />
+              )}
 
-            {groupedBusinesses.silver.length > 0 && (
-              <PromotedCarousel
-                businesses={groupedBusinesses.silver}
-                title="✨ Promocionados Silver"
-                onBusinessClick={setSelectedBusiness}
-              />
-            )}
+              {groupedBusinesses.silver.length > 0 && (
+                <PromotedCarousel
+                  businesses={groupedBusinesses.silver}
+                  title="✨ Promocionados Silver"
+                  onBusinessClick={setSelectedBusiness}
+                />
+              )}
 
-            {groupedBusinesses.regular.length > 0 && (
-              <div>
-                <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-3">
-                  Todos los resultados
-                </h2>
-                <div className="space-y-3">
-                  {groupedBusinesses.regular.map((business) => (
-                    <BusinessCard
-                      key={business.id}
-                      business={business}
-                      onClick={() => setSelectedBusiness(business)}
-                      variant="list"
-                    />
-                  ))}
+              {groupedBusinesses.regular.length > 0 && (
+                <div>
+                  <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-3">
+                    Todos los resultados
+                  </h2>
+                  <div className="space-y-3">
+                    {groupedBusinesses.regular.map((business) => (
+                      <BusinessCard
+                        key={business.id}
+                        business={business}
+                        onClick={() => setSelectedBusiness(business)}
+                        variant="list"
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {filteredBusinesses.length === 0 && (
-              <div className="text-center py-20">
-                <p className="text-gray-500 dark:text-gray-400 text-lg">
-                  No se encontraron resultados para "{searchQuery}"
-                </p>
-              </div>
-            )}
-          </div>
+              {filteredBusinesses.length === 0 && (
+                <div className="text-center py-20">
+                  <p className="text-gray-500 dark:text-gray-400 text-lg">
+                    No se encontraron resultados para "{searchQuery}"
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-20">
+              <p className="text-gray-500 dark:text-gray-400 text-lg">
+                Comienza a buscar para descubrir negocios
+              </p>
+            </div>
+          )}
         </main>
       )}
 
