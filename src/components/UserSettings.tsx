@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User, Settings, TrendingUp } from 'lucide-react';
+import { User, Settings, TrendingUp, Sun, Moon } from 'lucide-react';
 import { User as UserType } from '../types';
 
 interface UserSettingsProps {
@@ -7,20 +7,33 @@ interface UserSettingsProps {
   onClose: () => void;
   onUpgrade: () => void;
   onUpdateUser: (updatedUser: UserType) => void;
+  onThemeChange?: (theme: 'light' | 'dark') => void;
 }
 
-export function UserSettings({ user, onClose, onUpgrade, onUpdateUser }: UserSettingsProps) {
+export function UserSettings({ user, onClose, onUpgrade, onUpdateUser, onThemeChange }: UserSettingsProps) {
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    return (localStorage.getItem('theme') as 'light' | 'dark') || 'light';
+  });
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = () => {
     setIsSaving(true);
     const updatedUser = { ...user, name, email };
     onUpdateUser(updatedUser);
+    localStorage.setItem('theme', theme);
     setTimeout(() => {
       setIsSaving(false);
     }, 500);
+  };
+
+  const handleThemeChange = (newTheme: 'light' | 'dark') => {
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    if (onThemeChange) {
+      onThemeChange(newTheme);
+    }
   };
 
   return (
@@ -90,6 +103,49 @@ export function UserSettings({ user, onClose, onUpgrade, onUpdateUser }: UserSet
                 >
                   {isSaving ? 'Guardando...' : 'Guardar Cambios'}
                 </button>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <Sun className="w-6 h-6 text-gray-600" />
+                <h3 className="text-lg font-semibold text-gray-800">Apariencia</h3>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-sm text-gray-700 mb-4">
+                  Elige el tema de la aplicación según tu preferencia
+                </p>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => handleThemeChange('light')}
+                    className={`flex items-center justify-center gap-3 px-4 py-3 rounded-lg border-2 transition-all ${
+                      theme === 'light'
+                        ? 'border-blue-600 bg-blue-50 text-blue-700'
+                        : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                    }`}
+                  >
+                    <Sun className="w-5 h-5" />
+                    <span className="font-medium">Claro</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleThemeChange('dark')}
+                    className={`flex items-center justify-center gap-3 px-4 py-3 rounded-lg border-2 transition-all ${
+                      theme === 'dark'
+                        ? 'border-blue-600 bg-blue-50 text-blue-700'
+                        : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                    }`}
+                  >
+                    <Moon className="w-5 h-5" />
+                    <span className="font-medium">Oscuro</span>
+                  </button>
+                </div>
+
+                <p className="text-xs text-gray-500 mt-2">
+                  Tema seleccionado: <span className="font-medium">{theme === 'light' ? 'Claro' : 'Oscuro'}</span>
+                </p>
               </div>
             </div>
 

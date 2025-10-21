@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { User as UserIcon, Settings, LogOut, ChevronDown, Store, Calendar } from 'lucide-react';
+import { User as UserIcon, Settings, LogOut, ChevronDown, Store, Calendar, TrendingUp } from 'lucide-react';
 import { User } from '../types';
 
 interface UserMenuProps {
@@ -8,9 +8,10 @@ interface UserMenuProps {
   onLogout: () => void;
   onBusinessDashboard?: () => void;
   onEvents?: () => void;
+  onUpgrade?: () => void;
 }
 
-export function UserMenu({ user, onSettings, onLogout, onBusinessDashboard, onEvents }: UserMenuProps) {
+export function UserMenu({ user, onSettings, onLogout, onBusinessDashboard, onEvents, onUpgrade }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -88,6 +89,19 @@ export function UserMenu({ user, onSettings, onLogout, onBusinessDashboard, onEv
               <Settings className="w-4 h-4" />
               <span>Configuración</span>
             </button>
+
+            {user.type === 'customer' && onUpgrade && (
+              <button
+                onClick={() => {
+                  onUpgrade();
+                  setIsOpen(false);
+                }}
+                className="w-full px-4 py-2 text-left hover:bg-orange-50 flex items-center gap-3 text-orange-600 font-medium"
+              >
+                <TrendingUp className="w-4 h-4" />
+                <span>Actualizar a Negocio</span>
+              </button>
+            )}
           </div>
 
           <div className="border-t border-gray-200 py-1">

@@ -30,6 +30,9 @@ function App() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showEventModal, setShowEventModal] = useState(false);
   const [eventBusinessId, setEventBusinessId] = useState<string | null>(null);
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    return (localStorage.getItem('theme') as 'light' | 'dark') || 'light';
+  });
 
   useEffect(() => {
     storageService.initializeSampleData();
@@ -40,6 +43,14 @@ function App() {
     const user = storageService.getCurrentUser();
     setCurrentUser(user);
   }, []);
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
 
   useEffect(() => {
     const results = searchService.searchBusinesses(searchQuery, businesses);
@@ -160,13 +171,13 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50">
-      <header className="bg-white shadow-sm sticky top-0 z-40">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-200">
+      <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40 transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-3">
             <h1
               onClick={() => setViewMode('directory')}
-              className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-orange-600 bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
+              className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-orange-600 bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity dark:from-blue-400 dark:to-orange-400"
             >
               BuscaNegocio
             </h1>
@@ -179,6 +190,7 @@ function App() {
                   onLogout={handleLogout}
                   onBusinessDashboard={currentUser.type === 'business' ? () => setViewMode('business-dashboard') : undefined}
                   onEvents={() => setViewMode('events')}
+                  onUpgrade={currentUser.type === 'customer' ? handleUpgrade : undefined}
                 />
               ) : (
                 <button
@@ -197,8 +209,8 @@ function App() {
               onClick={() => setViewMode('directory')}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                 viewMode === 'directory'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-blue-600 text-white dark:bg-blue-500'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
               }`}
             >
               <UserIcon className="w-4 h-4" />
@@ -209,8 +221,8 @@ function App() {
               onClick={() => setViewMode('delivery')}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                 viewMode === 'delivery'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-blue-600 text-white dark:bg-blue-500'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
               }`}
             >
               <PackageIcon className="w-4 h-4" />
@@ -224,10 +236,10 @@ function App() {
       {viewMode === 'directory' && (
         <main className="max-w-7xl mx-auto px-4 py-8">
           <div className="mb-12">
-            <h2 className="text-3xl font-bold text-gray-800 mb-2 text-center">
+            <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2 text-center">
               Descubre los mejores lugares
             </h2>
-            <p className="text-gray-600 text-center mb-6">
+            <p className="text-gray-600 dark:text-gray-300 text-center mb-6">
               Restaurantes, entretenimiento, tiendas y más
             </p>
             <SearchBar value={searchQuery} onChange={setSearchQuery} />
@@ -260,7 +272,7 @@ function App() {
 
             {groupedBusinesses.regular.length > 0 && (
               <div>
-                <h2 className="text-lg font-bold text-gray-800 mb-3">
+                <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-3">
                   Todos los resultados
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -277,7 +289,7 @@ function App() {
 
             {filteredBusinesses.length === 0 && (
               <div className="text-center py-20">
-                <p className="text-gray-500 text-lg">
+                <p className="text-gray-500 dark:text-gray-400 text-lg">
                   No se encontraron resultados para "{searchQuery}"
                 </p>
               </div>
@@ -321,6 +333,7 @@ function App() {
           onClose={() => setShowSettings(false)}
           onUpgrade={handleUpgrade}
           onUpdateUser={handleUpdateUser}
+          onThemeChange={setTheme}
         />
       )}
 
