@@ -11,10 +11,25 @@ interface PromotedCarouselProps {
 
 export function PromotedCarousel({ businesses, title, onBusinessClick }: PromotedCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [showArrows, setShowArrows] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setCurrentIndex(0);
+  }, [businesses]);
+
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (containerRef.current) {
+        const container = containerRef.current;
+        const totalWidth = businesses.length * (container.offsetWidth / 3);
+        setShowArrows(totalWidth > container.offsetWidth);
+      }
+    };
+
+    checkOverflow();
+    window.addEventListener('resize', checkOverflow);
+    return () => window.removeEventListener('resize', checkOverflow);
   }, [businesses]);
 
   if (businesses.length === 0) return null;
@@ -28,10 +43,9 @@ export function PromotedCarousel({ businesses, title, onBusinessClick }: Promote
   };
 
   return (
-    <div className="mb-6">
-      <h2 className="text-lg font-bold text-gray-800 mb-3">{title}</h2>
+    <div className="mb-8 pb-4">
       <div className="relative">
-        {businesses.length > 1 && (
+        {showArrows && (
           <>
             <button
               onClick={handlePrev}
@@ -48,32 +62,18 @@ export function PromotedCarousel({ businesses, title, onBusinessClick }: Promote
           </>
         )}
 
-        <div ref={containerRef} className="overflow-hidden px-10">
+        <div ref={containerRef} className="overflow-visible px-10">
           <div
-            className="flex transition-transform duration-300 ease-in-out"
-            style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+            className="flex transition-transform duration-300 ease-in-out gap-4"
+            style={{ transform: `translateX(-${currentIndex * 33.333}%)` }}
           >
             {businesses.map((business) => (
-              <div key={business.id} className="w-full flex-shrink-0 px-2">
+              <div key={business.id} className="w-[calc(33.333%-1rem)] flex-shrink-0">
                 <BusinessCard business={business} onClick={() => onBusinessClick(business)} />
               </div>
             ))}
           </div>
         </div>
-
-        {businesses.length > 1 && (
-          <div className="flex justify-center gap-2 mt-4">
-            {businesses.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  index === currentIndex ? 'bg-blue-600 w-6' : 'bg-gray-300'
-                }`}
-              />
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );

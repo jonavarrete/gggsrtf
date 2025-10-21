@@ -174,13 +174,41 @@ function App() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-200">
       <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40 transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-3">
-            <h1
-              onClick={() => setViewMode('directory')}
-              className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-orange-600 bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity dark:from-blue-400 dark:to-orange-400"
-            >
-              BuscaNegocio
-            </h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <h1
+                onClick={() => setViewMode('directory')}
+                className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-orange-600 bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity dark:from-blue-400 dark:to-orange-400"
+              >
+                BuscaNegocio
+              </h1>
+
+              <nav className="flex gap-2">
+                <button
+                  onClick={() => setViewMode('directory')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                    viewMode === 'directory'
+                      ? 'bg-blue-600 text-white dark:bg-blue-500'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  <UserIcon className="w-4 h-4" />
+                  Directorio
+                </button>
+
+                <button
+                  onClick={() => setViewMode('delivery')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                    viewMode === 'delivery'
+                      ? 'bg-blue-600 text-white dark:bg-blue-500'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  <PackageIcon className="w-4 h-4" />
+                  Mensajería
+                </button>
+              </nav>
+            </div>
 
             <div>
               {currentUser ? (
@@ -203,33 +231,6 @@ function App() {
               )}
             </div>
           </div>
-
-          <nav className="flex gap-2">
-            <button
-              onClick={() => setViewMode('directory')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                viewMode === 'directory'
-                  ? 'bg-blue-600 text-white dark:bg-blue-500'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
-              }`}
-            >
-              <UserIcon className="w-4 h-4" />
-              Directorio
-            </button>
-
-            <button
-              onClick={() => setViewMode('delivery')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                viewMode === 'delivery'
-                  ? 'bg-blue-600 text-white dark:bg-blue-500'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
-              }`}
-            >
-              <PackageIcon className="w-4 h-4" />
-              Mensajería
-            </button>
-
-          </nav>
         </div>
       </header>
 
@@ -275,12 +276,13 @@ function App() {
                 <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-3">
                   Todos los resultados
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="space-y-3">
                   {groupedBusinesses.regular.map((business) => (
                     <BusinessCard
                       key={business.id}
                       business={business}
                       onClick={() => setSelectedBusiness(business)}
+                      variant="list"
                     />
                   ))}
                 </div>
