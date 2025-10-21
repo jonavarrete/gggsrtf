@@ -36,6 +36,23 @@ export interface User {
   email: string;
   type: UserType;
   businessId?: string;
+  createdAt: string;
+}
+
+export type EventCategory = 'cinema' | 'theater';
+
+export interface Event {
+  id: string;
+  title: string;
+  category: EventCategory;
+  description: string;
+  image: string;
+  date: string;
+  time: string;
+  venue: string;
+  price: number;
+  userId: string;
+  createdAt: string;
 }
 
 export type PackageStatus = 'pending' | 'in_transit' | 'delivered' | 'cancelled';

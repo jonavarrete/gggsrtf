@@ -1,9 +1,11 @@
-import { Business, Review, User } from '../types';
+import { Business, Review, User, Event } from '../types';
 
 const STORAGE_KEYS = {
   BUSINESSES: 'businesses',
   REVIEWS: 'reviews',
   CURRENT_USER: 'currentUser',
+  USERS: 'users',
+  EVENTS: 'events',
 };
 
 export const storageService = {
@@ -69,11 +71,116 @@ export const storageService = {
       email,
       type: 'business',
       businessId,
+      createdAt: new Date().toISOString(),
     };
     return user;
   },
 
+  getUsers(): User[] {
+    const data = localStorage.getItem(STORAGE_KEYS.USERS);
+    return data ? JSON.parse(data) : [];
+  },
+
+  setUsers(users: User[]): void {
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+  },
+
+  addUser(user: User): void {
+    const users = this.getUsers();
+    users.push(user);
+    this.setUsers(users);
+  },
+
+  updateUser(updatedUser: User): void {
+    const users = this.getUsers();
+    const index = users.findIndex(u => u.id === updatedUser.id);
+    if (index !== -1) {
+      users[index] = updatedUser;
+      this.setUsers(users);
+    }
+    if (this.getCurrentUser()?.id === updatedUser.id) {
+      this.setCurrentUser(updatedUser);
+    }
+  },
+
+  upgradeUserToBusiness(userId: string, businessData: Omit<Business, 'id' | 'rating' | 'reviewCount'>): { user: User; business: Business } {
+    const users = this.getUsers();
+    const userIndex = users.findIndex(u => u.id === userId);
+
+    if (userIndex === -1) {
+      throw new Error('Usuario no encontrado');
+    }
+
+    const businessId = Date.now().toString();
+    const business: Business = {
+      ...businessData,
+      id: businessId,
+      rating: 0,
+      reviewCount: 0,
+    };
+
+    const businesses = this.getBusinesses();
+    businesses.push(business);
+    this.setBusinesses(businesses);
+
+    users[userIndex] = {
+      ...users[userIndex],
+      type: 'business',
+      businessId,
+    };
+    this.setUsers(users);
+    this.setCurrentUser(users[userIndex]);
+
+    return { user: users[userIndex], business };
+  },
+
+  getEvents(): Event[] {
+    const data = localStorage.getItem(STORAGE_KEYS.EVENTS);
+    return data ? JSON.parse(data) : [];
+  },
+
+  setEvents(events: Event[]): void {
+    localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(events));
+  },
+
+  getEventsByUser(userId: string): Event[] {
+    return this.getEvents().filter(e => e.userId === userId);
+  },
+
+  addEvent(event: Event): void {
+    const events = this.getEvents();
+    events.push(event);
+    this.setEvents(events);
+  },
+
+  updateEvent(updatedEvent: Event): void {
+    const events = this.getEvents();
+    const index = events.findIndex(e => e.id === updatedEvent.id);
+    if (index !== -1) {
+      events[index] = updatedEvent;
+      this.setEvents(events);
+    }
+  },
+
+  deleteEvent(eventId: string): void {
+    const events = this.getEvents().filter(e => e.id !== eventId);
+    this.setEvents(events);
+  },
+
   initializeSampleData(): void {
+    if (this.getUsers().length === 0) {
+      const sampleUsers: User[] = [
+        {
+          id: 'user-1',
+          name: 'Juan Pérez',
+          email: 'juan@example.com',
+          type: 'customer',
+          createdAt: new Date().toISOString(),
+        },
+      ];
+      this.setUsers(sampleUsers);
+    }
+
     if (this.getBusinesses().length === 0) {
       const sampleBusinesses: Business[] = [
         {

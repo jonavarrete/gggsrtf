@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LogIn, LogOut, User as UserIcon, Store, Package as PackageIcon } from 'lucide-react';
+import { LogIn, LogOut, User as UserIcon, Store, Package as PackageIcon, Settings, Calendar } from 'lucide-react';
 import { Business, User } from './types';
 import { storageService } from './services/storage';
 import { searchService } from './services/search';
@@ -10,8 +10,11 @@ import { BusinessDetail } from './components/BusinessDetail';
 import { LoginModal } from './components/LoginModal';
 import { BusinessDashboard } from './components/BusinessDashboard';
 import { DeliveryService } from './components/DeliveryService';
+import { UserSettings } from './components/UserSettings';
+import { EventManager } from './components/EventManager';
+import { UpgradeModal } from './components/UpgradeModal';
 
-type ViewMode = 'directory' | 'business-dashboard' | 'delivery';
+type ViewMode = 'directory' | 'business-dashboard' | 'delivery' | 'events';
 
 function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('directory');
@@ -21,6 +24,8 @@ function App() {
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   useEffect(() => {
     storageService.initializeSampleData();
@@ -40,8 +45,21 @@ function App() {
   const groupedBusinesses = searchService.groupByPromotionTier(filteredBusinesses);
 
   const handleLogin = (user: User) => {
-    storageService.setCurrentUser(user);
-    setCurrentUser(user);
+    const existingUsers = storageService.getUsers();
+    const existingUser = existingUsers.find(u => u.email === user.email);
+
+    if (!existingUser) {
+      const newUser = {
+        ...user,
+        createdAt: new Date().toISOString(),
+      };
+      storageService.addUser(newUser);
+      storageService.setCurrentUser(newUser);
+      setCurrentUser(newUser);
+    } else {
+      storageService.setCurrentUser(existingUser);
+      setCurrentUser(existingUser);
+    }
   };
 
   const handleLogout = () => {
@@ -73,6 +91,26 @@ function App() {
     }
   };
 
+  const handleUpgrade = () => {
+    setShowSettings(false);
+    setShowUpgradeModal(true);
+  };
+
+  const handleConfirmUpgrade = (businessData: Omit<Business, 'id' | 'rating' | 'reviewCount'>) => {
+    if (!currentUser) return;
+
+    const { user, business } = storageService.upgradeUserToBusiness(currentUser.id, businessData);
+    setCurrentUser(user);
+    setBusinesses([...businesses, business]);
+    setShowUpgradeModal(false);
+    setViewMode('business-dashboard');
+  };
+
+  const handleUpdateUser = (updatedUser: User) => {
+    storageService.updateUser(updatedUser);
+    setCurrentUser(updatedUser);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50">
       <header className="bg-white shadow-sm sticky top-0 z-40">
@@ -95,6 +133,13 @@ function App() {
                       ({currentUser.type === 'business' ? 'Negocio' : 'Cliente'})
                     </span>
                   </div>
+                  <button
+                    onClick={() => setShowSettings(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  >
+                    <Settings className="w-4 h-4" />
+                    <span>Configuración</span>
+                  </button>
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
@@ -139,6 +184,20 @@ function App() {
               <PackageIcon className="w-4 h-4" />
               Mensajería
             </button>
+
+            {currentUser?.type === 'customer' && (
+              <button
+                onClick={() => setViewMode('events')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                  viewMode === 'events'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <Calendar className="w-4 h-4" />
+                Mis Eventos
+              </button>
+            )}
 
             {currentUser?.type === 'business' && (
               <button
@@ -228,6 +287,10 @@ function App() {
 
       {viewMode === 'delivery' && <DeliveryService onClose={() => setViewMode('directory')} />}
 
+      {viewMode === 'events' && currentUser?.type === 'customer' && (
+        <EventManager user={currentUser} />
+      )}
+
       {selectedBusiness && (
         <BusinessDetail
           business={selectedBusiness}
@@ -242,6 +305,23 @@ function App() {
         <LoginModal
           onClose={() => setShowLoginModal(false)}
           onLogin={handleLogin}
+        />
+      )}
+
+      {showSettings && currentUser && (
+        <UserSettings
+          user={currentUser}
+          onClose={() => setShowSettings(false)}
+          onUpgrade={handleUpgrade}
+          onUpdateUser={handleUpdateUser}
+        />
+      )}
+
+      {showUpgradeModal && currentUser && (
+        <UpgradeModal
+          userName={currentUser.name}
+          onClose={() => setShowUpgradeModal(false)}
+          onConfirm={handleConfirmUpgrade}
         />
       )}
     </div>
