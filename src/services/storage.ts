@@ -147,6 +147,17 @@ export const storageService = {
     return this.getEvents().filter(e => e.userId === userId);
   },
 
+  getEventsByBusiness(businessId: string): Event[] {
+    return this.getEvents().filter(e => e.businessId === businessId);
+  },
+
+  getCinemaAndTheaterBusinesses(): Business[] {
+    return this.getBusinesses().filter(b =>
+      b.category === 'entertainment' &&
+      (b.tags.some(tag => tag.toLowerCase().includes('cine') || tag.toLowerCase().includes('teatro')))
+    );
+  },
+
   addEvent(event: Event): void {
     const events = this.getEvents();
     events.push(event);
@@ -279,6 +290,19 @@ export const storageService = {
           reviewCount: 112,
           address: 'Estadio Municipal',
           tags: ['deportes', 'bar', 'futbol'],
+        },
+        {
+          id: '9',
+          name: 'Teatro Nacional',
+          category: 'entertainment',
+          description: 'Teatro clásico con obras de talla mundial',
+          image: 'https://images.pexels.com/photos/713149/pexels-photo-713149.jpeg?auto=compress&cs=tinysrgb&w=800',
+          promotionTier: 'gold',
+          rating: 4.8,
+          reviewCount: 234,
+          address: 'Avenida de las Artes 100',
+          phone: '+1 234 567 891',
+          tags: ['teatro', 'cultura', 'entretenimiento'],
         },
       ];
       this.setBusinesses(sampleBusinesses);

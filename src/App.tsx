@@ -14,6 +14,7 @@ import { UserSettings } from './components/UserSettings';
 import { EventManager } from './components/EventManager';
 import { UpgradeModal } from './components/UpgradeModal';
 import { UserMenu } from './components/UserMenu';
+import { AddEventModal } from './components/AddEventModal';
 
 type ViewMode = 'directory' | 'business-dashboard' | 'delivery' | 'events';
 
@@ -27,6 +28,8 @@ function App() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [eventBusinessId, setEventBusinessId] = useState<string | null>(null);
 
   useEffect(() => {
     storageService.initializeSampleData();
@@ -110,6 +113,50 @@ function App() {
   const handleUpdateUser = (updatedUser: User) => {
     storageService.updateUser(updatedUser);
     setCurrentUser(updatedUser);
+  };
+
+  const handleOpenAddEvent = (businessId: string) => {
+    if (!currentUser) {
+      setShowLoginModal(true);
+      return;
+    }
+    setEventBusinessId(businessId);
+    setShowEventModal(true);
+  };
+
+  const handleCloseEventModal = () => {
+    setShowEventModal(false);
+    setEventBusinessId(null);
+  };
+
+  const handleAddEventSubmit = (eventData: {
+    title: string;
+    category: 'cinema' | 'theater';
+    description: string;
+    image: string;
+    date: string;
+    time: string;
+    venue: string;
+    price: number;
+  }) => {
+    if (!currentUser || !eventBusinessId) return;
+
+    const event = {
+      id: Date.now().toString(),
+      ...eventData,
+      userId: currentUser.id,
+      businessId: eventBusinessId,
+      createdAt: new Date().toISOString(),
+    };
+
+    storageService.addEvent(event);
+
+    if (selectedBusiness && selectedBusiness.id === eventBusinessId) {
+      const updatedBusiness = businesses.find(b => b.id === eventBusinessId);
+      if (updatedBusiness) {
+        setSelectedBusiness(updatedBusiness);
+      }
+    }
   };
 
   return (
@@ -253,9 +300,11 @@ function App() {
         <BusinessDetail
           business={selectedBusiness}
           reviews={storageService.getReviewsByBusiness(selectedBusiness.id)}
+          events={storageService.getEventsByBusiness(selectedBusiness.id)}
           currentUser={currentUser}
           onClose={() => setSelectedBusiness(null)}
           onAddReview={handleAddReview}
+          onAddEvent={() => handleOpenAddEvent(selectedBusiness.id)}
         />
       )}
 
@@ -280,6 +329,14 @@ function App() {
           userName={currentUser.name}
           onClose={() => setShowUpgradeModal(false)}
           onConfirm={handleConfirmUpgrade}
+        />
+      )}
+
+      {showEventModal && eventBusinessId && (
+        <AddEventModal
+          business={businesses.find(b => b.id === eventBusinessId)!}
+          onClose={handleCloseEventModal}
+          onSubmit={handleAddEventSubmit}
         />
       )}
     </div>

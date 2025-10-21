@@ -52,6 +52,7 @@ export interface Event {
   venue: string;
   price: number;
   userId: string;
+  businessId?: string;
   createdAt: string;
 }
 

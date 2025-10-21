@@ -1,21 +1,28 @@
 import { X, MapPin, Phone, Globe, Star } from 'lucide-react';
-import { Business, Review, User } from '../types';
+import { Business, Review, User, Event } from '../types';
 import { StarRating } from './StarRating';
 import { PromotionBadge } from './PromotionBadge';
+import { BusinessEvents } from './BusinessEvents';
 import { useState } from 'react';
 
 interface BusinessDetailProps {
   business: Business;
   reviews: Review[];
+  events: Event[];
   currentUser: User | null;
   onClose: () => void;
   onAddReview: (rating: number, comment: string) => void;
+  onAddEvent?: () => void;
 }
 
-export function BusinessDetail({ business, reviews, currentUser, onClose, onAddReview }: BusinessDetailProps) {
+export function BusinessDetail({ business, reviews, events, currentUser, onClose, onAddReview, onAddEvent }: BusinessDetailProps) {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [hoveredStar, setHoveredStar] = useState(0);
+
+  const isCinemaOrTheater = business.category === 'entertainment' &&
+    (business.tags.some(tag => tag.toLowerCase().includes('cine') || tag.toLowerCase().includes('teatro')));
+  const canAddEvent = currentUser !== null && isCinemaOrTheater;
 
   const handleSubmitReview = (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,7 +100,14 @@ export function BusinessDetail({ business, reviews, currentUser, onClose, onAddR
             ))}
           </div>
 
-          <div className="border-t border-gray-200 pt-6">
+          <BusinessEvents
+            business={business}
+            events={events}
+            onAddEvent={onAddEvent}
+            canAddEvent={canAddEvent}
+          />
+
+          <div className="border-t border-gray-200 pt-6 mt-6">
             <h3 className="text-xl font-bold text-gray-800 mb-4">
               Valoraciones ({reviews.length})
             </h3>
