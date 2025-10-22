@@ -206,6 +206,24 @@ export const storageService = {
           address: 'Calle Principal 123',
           phone: '+1 234 567 890',
           tags: ['carnes', 'parrilla', 'premium'],
+          products: [
+            {
+              id: 'p1-1',
+              name: 'Bife de Chorizo Premium',
+              description: 'Corte argentino de 400g con guarnición',
+              price: 28.50,
+              image: 'https://images.pexels.com/photos/769289/pexels-photo-769289.jpeg?auto=compress&cs=tinysrgb&w=400',
+              businessId: '1',
+            },
+            {
+              id: 'p1-2',
+              name: 'Costillas BBQ',
+              description: 'Costillas de cerdo con salsa BBQ casera',
+              price: 22.00,
+              image: 'https://images.pexels.com/photos/1566837/pexels-photo-1566837.jpeg?auto=compress&cs=tinysrgb&w=400',
+              businessId: '1',
+            },
+          ],
         },
         {
           id: '2',
@@ -230,6 +248,24 @@ export const storageService = {
           reviewCount: 203,
           address: 'Plaza Mayor 789',
           tags: ['café', 'postres', 'artesanal'],
+          products: [
+            {
+              id: 'p3-1',
+              name: 'Cappuccino Artesanal',
+              description: 'Café espresso con leche vaporizada y arte latte',
+              price: 4.50,
+              image: 'https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?auto=compress&cs=tinysrgb&w=400',
+              businessId: '3',
+            },
+            {
+              id: 'p3-2',
+              name: 'Torta de Chocolate',
+              description: 'Torta casera de chocolate belga con ganache',
+              price: 6.00,
+              image: 'https://images.pexels.com/photos/291528/pexels-photo-291528.jpeg?auto=compress&cs=tinysrgb&w=400',
+              businessId: '3',
+            },
+          ],
         },
         {
           id: '4',
@@ -278,6 +314,32 @@ export const storageService = {
           reviewCount: 178,
           address: 'Calle Italia 888',
           tags: ['pizza', 'italiana', 'horno de leña'],
+          products: [
+            {
+              id: 'p7-1',
+              name: 'Pizza Margherita',
+              description: 'Tomate San Marzano, mozzarella di bufala y albahaca fresca',
+              price: 12.00,
+              image: 'https://images.pexels.com/photos/2147491/pexels-photo-2147491.jpeg?auto=compress&cs=tinysrgb&w=400',
+              businessId: '7',
+            },
+            {
+              id: 'p7-2',
+              name: 'Pizza de Queso',
+              description: 'Mezcla de 4 quesos italianos en horno de leña',
+              price: 14.50,
+              image: 'https://images.pexels.com/photos/803290/pexels-photo-803290.jpeg?auto=compress&cs=tinysrgb&w=400',
+              businessId: '7',
+            },
+            {
+              id: 'p7-3',
+              name: 'Pizza Pepperoni',
+              description: 'Pepperoni artesanal con queso mozzarella',
+              price: 13.50,
+              image: 'https://images.pexels.com/photos/825661/pexels-photo-825661.jpeg?auto=compress&cs=tinysrgb&w=400',
+              businessId: '7',
+            },
+          ],
         },
         {
           id: '8',

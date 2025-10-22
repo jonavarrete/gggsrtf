@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { LogIn, User as UserIcon, Package as PackageIcon } from 'lucide-react';
-import { Business, User } from './types';
+import { Business, User, SearchResult } from './types';
 import { storageService } from './services/storage';
 import { searchService } from './services/search';
 import { SearchBar } from './components/SearchBar';
 import { PromotedCarousel } from './components/PromotedCarousel';
 import { BusinessCard } from './components/BusinessCard';
-import { BusinessDetail } from './components/BusinessDetail';
+import { ProductCard } from './components/ProductCard';
+import { BusinessPage } from './components/BusinessPage';
 import { LoginModal } from './components/LoginModal';
 import { BusinessDashboard } from './components/BusinessDashboard';
 import { DeliveryService } from './components/DeliveryService';
@@ -16,13 +17,13 @@ import { UpgradeModal } from './components/UpgradeModal';
 import { UserMenu } from './components/UserMenu';
 import { AddEventModal } from './components/AddEventModal';
 
-type ViewMode = 'directory' | 'business-dashboard' | 'delivery' | 'events';
+type ViewMode = 'directory' | 'business-dashboard' | 'delivery' | 'events' | 'business-page';
 
 function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('directory');
   const [searchQuery, setSearchQuery] = useState('');
   const [businesses, setBusinesses] = useState<Business[]>([]);
-  const [filteredBusinesses, setFilteredBusinesses] = useState<Business[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -38,7 +39,7 @@ function App() {
     storageService.initializeSampleData();
     const loadedBusinesses = storageService.getBusinesses();
     setBusinesses(loadedBusinesses);
-    setFilteredBusinesses(searchService.sortByPromotion(loadedBusinesses));
+    setSearchResults(searchService.search('', loadedBusinesses));
 
     const user = storageService.getCurrentUser();
     setCurrentUser(user);
@@ -53,11 +54,15 @@ function App() {
   }, [theme]);
 
   useEffect(() => {
-    const results = searchService.searchBusinesses(searchQuery, businesses);
-    setFilteredBusinesses(results);
+    const results = searchService.search(searchQuery, businesses);
+    setSearchResults(results);
   }, [searchQuery, businesses]);
 
-  const groupedBusinesses = searchService.groupByPromotionTier(filteredBusinesses);
+  const businessResults = searchResults.filter(r => r.type === 'business');
+  const productResults = searchResults.filter(r => r.type === 'product');
+  const groupedBusinesses = searchService.groupByPromotionTier(
+    businessResults.map(r => r.business!)
+  );
 
   const handleLogin = (user: User) => {
     const existingUsers = storageService.getUsers();
@@ -273,7 +278,10 @@ function App() {
                 <PromotedCarousel
                   businesses={groupedBusinesses.premium}
                   title="⭐ Destacados Premium"
-                  onBusinessClick={setSelectedBusiness}
+                  onBusinessClick={(business) => {
+                    setSelectedBusiness(business);
+                    setViewMode('business-page');
+                  }}
                 />
               )}
 
@@ -281,7 +289,10 @@ function App() {
                 <PromotedCarousel
                   businesses={groupedBusinesses.gold}
                   title="🏆 Promocionados Gold"
-                  onBusinessClick={setSelectedBusiness}
+                  onBusinessClick={(business) => {
+                    setSelectedBusiness(business);
+                    setViewMode('business-page');
+                  }}
                 />
               )}
 
@@ -289,21 +300,27 @@ function App() {
                 <PromotedCarousel
                   businesses={groupedBusinesses.silver}
                   title="✨ Promocionados Silver"
-                  onBusinessClick={setSelectedBusiness}
+                  onBusinessClick={(business) => {
+                    setSelectedBusiness(business);
+                    setViewMode('business-page');
+                  }}
                 />
               )}
 
               {groupedBusinesses.regular.length > 0 && (
                 <div>
                   <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-3">
-                    Todos los resultados
+                    Negocios
                   </h2>
                   <div className="space-y-3">
                     {groupedBusinesses.regular.map((business) => (
                       <BusinessCard
                         key={business.id}
                         business={business}
-                        onClick={() => setSelectedBusiness(business)}
+                        onClick={() => {
+                          setSelectedBusiness(business);
+                          setViewMode('business-page');
+                        }}
                         variant="list"
                       />
                     ))}
@@ -311,7 +328,28 @@ function App() {
                 </div>
               )}
 
-              {filteredBusinesses.length === 0 && (
+              {productResults.length > 0 && (
+                <div>
+                  <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-3">
+                    Productos
+                  </h2>
+                  <div className="space-y-3">
+                    {productResults.map((result) => (
+                      <ProductCard
+                        key={result.product!.id}
+                        product={result.product!}
+                        parentBusiness={result.parentBusiness!}
+                        onClick={() => {
+                          setSelectedBusiness(result.parentBusiness!);
+                          setViewMode('business-page');
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {searchResults.length === 0 && (
                 <div className="text-center py-20">
                   <p className="text-gray-500 dark:text-gray-400 text-lg">
                     No se encontraron resultados para "{searchQuery}"
@@ -339,13 +377,16 @@ function App() {
         <EventManager user={currentUser} />
       )}
 
-      {selectedBusiness && (
-        <BusinessDetail
+      {viewMode === 'business-page' && selectedBusiness && (
+        <BusinessPage
           business={selectedBusiness}
           reviews={storageService.getReviewsByBusiness(selectedBusiness.id)}
           events={storageService.getEventsByBusiness(selectedBusiness.id)}
           currentUser={currentUser}
-          onClose={() => setSelectedBusiness(null)}
+          onBack={() => {
+            setSelectedBusiness(null);
+            setViewMode('directory');
+          }}
           onAddReview={handleAddReview}
           onAddEvent={() => handleOpenAddEvent(selectedBusiness.id)}
         />

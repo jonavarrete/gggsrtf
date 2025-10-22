@@ -4,9 +4,10 @@ interface StarRatingProps {
   rating: number;
   reviewCount?: number;
   size?: 'sm' | 'md' | 'lg';
+  theme?: 'dark' | 'light';
 }
 
-export function StarRating({ rating, reviewCount, size = 'md' }: StarRatingProps) {
+export function StarRating({ rating, reviewCount, size = 'md', theme = 'dark' }: StarRatingProps) {
   const sizeClasses = {
     sm: 'w-3.5 h-3.5',
     md: 'w-4 h-4',
@@ -18,6 +19,9 @@ export function StarRating({ rating, reviewCount, size = 'md' }: StarRatingProps
     md: 'text-sm',
     lg: 'text-base',
   };
+
+  const textColor = theme === 'light' ? 'text-white' : 'text-gray-700 dark:text-gray-300';
+  const countColor = theme === 'light' ? 'text-gray-200' : 'text-gray-500 dark:text-gray-400';
 
   return (
     <div className="flex items-center gap-1">
@@ -35,11 +39,11 @@ export function StarRating({ rating, reviewCount, size = 'md' }: StarRatingProps
           />
         ))}
       </div>
-      <span className={`${textSizes[size]} font-semibold text-gray-700`}>
+      <span className={`${textSizes[size]} font-semibold ${textColor}`}>
         {rating.toFixed(1)}
       </span>
       {reviewCount !== undefined && (
-        <span className={`${textSizes[size]} text-gray-500`}>
+        <span className={`${textSizes[size]} ${countColor}`}>
           ({reviewCount})
         </span>
       )}

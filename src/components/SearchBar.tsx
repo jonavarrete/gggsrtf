@@ -6,7 +6,7 @@ interface SearchBarProps {
   onChange: (value: string) => void;
 }
 
-export function SearchBar({ value, onChange }: SearchBarProps) {
+export function SearchBar({ onChange }: SearchBarProps) {
   const [inputValue, setInputValue] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {

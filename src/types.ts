@@ -13,6 +13,15 @@ export interface Review {
   images?: string[];
 }
 
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image?: string;
+  businessId: string;
+}
+
 export interface Business {
   id: string;
   name: string;
@@ -26,6 +35,7 @@ export interface Business {
   phone?: string;
   website?: string;
   tags: string[];
+  products?: Product[];
 }
 
 export type UserType = 'customer' | 'business';
@@ -73,4 +83,13 @@ export interface Package {
   price: number;
   createdAt: string;
   deliveredAt?: string;
+}
+
+export type SearchResultType = 'business' | 'product';
+
+export interface SearchResult {
+  type: SearchResultType;
+  business?: Business;
+  product?: Product;
+  parentBusiness?: Business;
 }
